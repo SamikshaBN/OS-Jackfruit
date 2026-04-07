@@ -1,16 +1,18 @@
 obj-m += monitor.o
 
 KDIR := /lib/modules/$(shell uname -r)/build
-PWD := $(shell pwd)
-# If you want host-built workload binaries to run directly inside an Alpine
-# rootfs, you can override this with WORKLOAD_LDFLAGS=-static when your
-# toolchain supports it.
+PWD  := $(shell pwd)
+
+# Static linking lets workload binaries run inside the Alpine rootfs
+# without needing its libc. Override with WORKLOAD_LDFLAGS= to build
+# dynamically (e.g. for CI runners without musl/static support).
 WORKLOAD_LDFLAGS ?= -static
 
 USER_TARGETS := engine memory_hog cpu_hog io_pulse
 
 all: $(USER_TARGETS) module
 
+# CI target: build only user-space binaries, no kernel headers required
 ci: WORKLOAD_LDFLAGS =
 ci: $(USER_TARGETS)
 
